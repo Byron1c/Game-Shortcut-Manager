@@ -148,6 +148,7 @@ namespace Game_Shortcut_Manager.Objects
                         String itemTarget = dr["Target"].ToString();
                         String itemWorkingDirectory = dr["WorkingDirectory"].ToString();
                         String itemName = dr["Name"].ToString();
+                        String itemShortcutPathSpecialFolder = dr["ShortcutPathSpecialFolder"].ToString();
 
                         ShortcutItem item = new ShortcutItem
                         {
@@ -158,7 +159,8 @@ namespace Game_Shortcut_Manager.Objects
                             ShortcutPath = itemShortcutPath,
                             Target = itemTarget,
                             WorkingDirectory = itemWorkingDirectory,
-                            Name = itemName
+                            Name = itemName,
+                            ShortcutPathSpecialFolder = itemShortcutPathSpecialFolder
                         };
 
                         Items.Add(item);
@@ -197,6 +199,7 @@ namespace Game_Shortcut_Manager.Objects
             dtShortcuts.Columns.Add("IconPath", System.Type.GetType("System.String"));
             dtShortcuts.Columns.Add("Arguments", System.Type.GetType("System.String"));
             dtShortcuts.Columns.Add("Hotkey", System.Type.GetType("System.String"));
+            dtShortcuts.Columns.Add("ShortcutPathSpecialFolder", System.Type.GetType("System.String"));
 
             dsMain.Tables.Add(dtShortcuts);
 
@@ -212,6 +215,8 @@ namespace Game_Shortcut_Manager.Objects
                 dr["IconPath"] = Items[i].IconPath;
                 dr["Arguments"] = Items[i].Arguments;
                 dr["Hotkey"] = Items[i].Hotkey;
+                dr["ShortcutPathSpecialFolder"] = Items[i].ShortcutPathSpecialFolder;
+                
 
                 dtShortcuts.Rows.Add(dr);
 

@@ -45,11 +45,12 @@ namespace Game_Shortcut_Manager
                 vItem.IconPath,
                 vItem.Arguments,
                 vItem.WindowStyle,
-                vItem.Hotkey
+                vItem.Hotkey,
+                vItem.ShortcutPathSpecialFolder
                 );
         }
         internal static Boolean CreateShortcut(String vShortcutPath, String vTitle, String vDescription, String vTargetPath, String vWorkingDirectory, 
-            String vIconPathExe, String vArguments, String vWindowStyle, String vHotkey)
+            String vIconPathExe, String vArguments, String vWindowStyle, String vHotkey, String vShortcutPathSpecialFolder)
         {
             //%APPDATA%\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar
             //if (!System.IO.File.Exists(vShortcutPath)) return false;
@@ -100,7 +101,14 @@ namespace Game_Shortcut_Manager
         }
 
 
+        private enum syspinCommands
+        {
+            PinToTaskbar = 5386,
+            UnpinFromTaskbar = 5387,
+            PinToStart = 51201,
+            UnpinFromStart = 51394
 
+        }
         //Usage :
         //  syspin ["file"] #### or syspin ["file"] "commandstring"
         //  5386  : Pin to taskbar
@@ -120,7 +128,7 @@ namespace Game_Shortcut_Manager
         {
             //String commandline =  "\"" + vPathToEXE + "\"" + " c:5386 ";
             //commandline = " \"" + frmMain.GetAppFullPath() + @"Objects\syspin.exe" + "\" " + commandline;
-            String commandline = "\"" + vPathToEXE + "\"" + " 5386 ";
+            String commandline = "\"" + vPathToEXE + "\"" + syspinCommands.PinToTaskbar.ToString(); // " 5386 ";
             commandline = ".\\Objects\\syspin.exe" + " " + commandline;
 
             //commandline = ".\\Objects\\syspin.exe";
@@ -133,7 +141,7 @@ namespace Game_Shortcut_Manager
             //String commandline =  "\"" + vPathToEXE + "\"" + " c:5386 ";
             //commandline = " \"" + frmMain.GetAppFullPath() + @"Objects\syspin.exe" + "\" " + commandline;
 
-            String commandline = "\"" + vPathToEXE + "\"" + " 51201 ";
+            String commandline = "\"" + vPathToEXE + "\"" + syspinCommands.PinToStart.ToString(); // " 51201 ";
             commandline = ".\\Objects\\syspin.exe" + " " + commandline;
 
             //commandline = ".\\Objects\\syspin.exe";
@@ -146,7 +154,7 @@ namespace Game_Shortcut_Manager
         {
             //String commandline = "\"" + vPathToEXE + "\"" + " c:5387 ";
             //commandline = " \"" + frmMain.GetAppFullPath() + @"Objects\syspin.exe" + "\" " + commandline;
-            String commandline = "\"" + vPathToEXE + "\"" + " 5387 ";
+            String commandline = "\"" + vPathToEXE + "\"" + syspinCommands.UnpinFromTaskbar.ToString(); // " 5387 ";
             commandline = ".\\Objects\\syspin.exe" + " " + commandline;
             return RunCommand(commandline);
         }
@@ -155,7 +163,7 @@ namespace Game_Shortcut_Manager
         {
             //String commandline = "\"" + vPathToEXE + "\"" + " c:5387 ";
             //commandline = " \"" + frmMain.GetAppFullPath() + @"Objects\syspin.exe" + "\" " + commandline;
-            String commandline = "\"" + vPathToEXE + "\"" + " 51394 ";
+            String commandline = "\"" + vPathToEXE + "\"" + syspinCommands.UnpinFromStart.ToString(); // " 51394 ";
             commandline = ".\\Objects\\syspin.exe" + " " + commandline;
             return RunCommand(commandline);
         }
@@ -313,6 +321,7 @@ namespace Game_Shortcut_Manager
                 vSI.Target = GetShortcutTargetFile(full_name);//fi.IsFolder.ToString();
                 //vSI.WindowStyle = "1";
                 vSI.WorkingDirectory = lnk.WorkingDirectory;
+                vSI.ShortcutPathSpecialFolder = "Other";
 
                 WshShell theShell = new WshShell();
                 WshShortcut theShortcut = (WshShortcut)theShell.CreateShortcut(full_name);

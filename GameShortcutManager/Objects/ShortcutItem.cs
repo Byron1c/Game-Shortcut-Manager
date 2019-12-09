@@ -16,6 +16,7 @@ namespace Game_Shortcut_Manager.Objects
         public String Target = string.Empty;
         public String Name = string.Empty;
         public String WindowStyle = string.Empty;
+        public String ShortcutPathSpecialFolder = "Other";
 
 
 
