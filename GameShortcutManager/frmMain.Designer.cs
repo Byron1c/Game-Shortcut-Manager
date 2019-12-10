@@ -75,12 +75,15 @@
             this.cmShortcuts = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.openShortcutFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openIconFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.pnlWorking = new System.Windows.Forms.Panel();
+            this.label9 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pbIcon)).BeginInit();
             this.pnlForm.SuspendLayout();
             this.pnlList.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.olvShortcuts)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.cmShortcuts.SuspendLayout();
+            this.pnlWorking.SuspendLayout();
             this.SuspendLayout();
             // 
             // pbIcon
@@ -307,6 +310,7 @@
             this.pnlForm.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pnlForm.BackgroundImage")));
             this.pnlForm.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.pnlForm.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pnlForm.Controls.Add(this.pnlWorking);
             this.pnlForm.Controls.Add(this.btnClearForm);
             this.pnlForm.Controls.Add(this.cbWindowStyle);
             this.pnlForm.Controls.Add(this.label8);
@@ -571,6 +575,27 @@
             this.openIconFolderToolStripMenuItem.Text = "Open &Icon Folder";
             this.openIconFolderToolStripMenuItem.Click += new System.EventHandler(this.openIconFolderToolStripMenuItem_Click);
             // 
+            // pnlWorking
+            // 
+            this.pnlWorking.BackColor = System.Drawing.Color.NavajoWhite;
+            this.pnlWorking.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pnlWorking.Controls.Add(this.label9);
+            this.pnlWorking.Location = new System.Drawing.Point(231, 85);
+            this.pnlWorking.Name = "pnlWorking";
+            this.pnlWorking.Size = new System.Drawing.Size(200, 40);
+            this.pnlWorking.TabIndex = 27;
+            this.pnlWorking.Visible = false;
+            // 
+            // label9
+            // 
+            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label9.Location = new System.Drawing.Point(3, 2);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(192, 34);
+            this.label9.TabIndex = 0;
+            this.label9.Text = "Working";
+            this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -597,6 +622,7 @@
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.cmShortcuts.ResumeLayout(false);
+            this.pnlWorking.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -649,6 +675,8 @@
         private System.Windows.Forms.Button btnClearForm;
         private System.Windows.Forms.Button btnRemoveEntry;
         private BrightIdeasSoftware.OLVColumn olvShortcutPath;
+        private System.Windows.Forms.Panel pnlWorking;
+        private System.Windows.Forms.Label label9;
     }
 }
 

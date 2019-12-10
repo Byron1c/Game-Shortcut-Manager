@@ -82,5 +82,17 @@ namespace Game_Shortcut_Manager.Properties {
                 this["ShortcutPathPreset"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool WelcomeMessageShown {
+            get {
+                return ((bool)(this["WelcomeMessageShown"]));
+            }
+            set {
+                this["WelcomeMessageShown"] = value;
+            }
+        }
     }
 }

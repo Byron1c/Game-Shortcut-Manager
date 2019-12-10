@@ -128,7 +128,7 @@ namespace Game_Shortcut_Manager
         {
             //String commandline =  "\"" + vPathToEXE + "\"" + " c:5386 ";
             //commandline = " \"" + frmMain.GetAppFullPath() + @"Objects\syspin.exe" + "\" " + commandline;
-            String commandline = "\"" + vPathToEXE + "\"" + syspinCommands.PinToTaskbar.ToString(); // " 5386 ";
+            String commandline = "\"" + vPathToEXE + "\" " + (int)syspinCommands.PinToTaskbar; // " 5386 ";
             commandline = ".\\Objects\\syspin.exe" + " " + commandline;
 
             //commandline = ".\\Objects\\syspin.exe";
@@ -141,9 +141,10 @@ namespace Game_Shortcut_Manager
             //String commandline =  "\"" + vPathToEXE + "\"" + " c:5386 ";
             //commandline = " \"" + frmMain.GetAppFullPath() + @"Objects\syspin.exe" + "\" " + commandline;
 
-            String commandline = "\"" + vPathToEXE + "\"" + syspinCommands.PinToStart.ToString(); // " 51201 ";
+            String commandline = "\"" + vPathToEXE + "\" " + (int)syspinCommands.PinToStart; // " 51201 ";
             commandline = ".\\Objects\\syspin.exe" + " " + commandline;
 
+            //string test = commandline.Replace("\\", @"\");
             //commandline = ".\\Objects\\syspin.exe";
             return RunCommand(commandline);
 
@@ -154,7 +155,7 @@ namespace Game_Shortcut_Manager
         {
             //String commandline = "\"" + vPathToEXE + "\"" + " c:5387 ";
             //commandline = " \"" + frmMain.GetAppFullPath() + @"Objects\syspin.exe" + "\" " + commandline;
-            String commandline = "\"" + vPathToEXE + "\"" + syspinCommands.UnpinFromTaskbar.ToString(); // " 5387 ";
+            String commandline = "\"" + vPathToEXE + "\" " + (int)syspinCommands.UnpinFromTaskbar; // " 5387 ";
             commandline = ".\\Objects\\syspin.exe" + " " + commandline;
             return RunCommand(commandline);
         }
@@ -163,7 +164,7 @@ namespace Game_Shortcut_Manager
         {
             //String commandline = "\"" + vPathToEXE + "\"" + " c:5387 ";
             //commandline = " \"" + frmMain.GetAppFullPath() + @"Objects\syspin.exe" + "\" " + commandline;
-            String commandline = "\"" + vPathToEXE + "\"" + syspinCommands.UnpinFromStart.ToString(); // " 51394 ";
+            String commandline = "\"" + vPathToEXE + "\" " + (int)syspinCommands.UnpinFromStart; // " 51394 ";
             commandline = ".\\Objects\\syspin.exe" + " " + commandline;
             return RunCommand(commandline);
         }

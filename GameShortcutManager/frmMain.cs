@@ -185,6 +185,8 @@ namespace Game_Shortcut_Manager
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            showWelcome();
+
             ApplyingSettings = true;
 
             if (Properties.Settings.Default.CheckForUpdate) CheckForUpdate(false);
@@ -208,6 +210,7 @@ namespace Game_Shortcut_Manager
         //*****************************************************************************************************************
         internal void setValues()
         {
+            
             setIcon(CurrentEXEFilePath);
 
             txtName.Text = ExampleName;
@@ -245,6 +248,30 @@ namespace Game_Shortcut_Manager
 
         }
 
+        private void showWelcome()
+        {
+
+            if (!Properties.Settings.Default.WelcomeMessageShown)
+            {
+                MessageBox.Show(
+                    "I hope you find Game Shortcut Manager useful!"  + System.Environment.NewLine + System.Environment.NewLine
+                    + "This is a small tool to help you manage URLs (web links) to  " + System.Environment.NewLine
+                    + "applications and games and pin them to the Start Menu, and " + System.Environment.NewLine 
+                    + "Taskbar. Windows cannot do this on its own.  " + System.Environment.NewLine + System.Environment.NewLine
+                    + "Occasionally you may find the Add to Start Menu and Taskbar " + System.Environment.NewLine
+                    + "functions may not work on first try, you may need to give " + System.Environment.NewLine
+                    + "it another go: Click Remove, then add it again." + System.Environment.NewLine
+                    + "(I have not been able to resolve this with the available tools)" + System.Environment.NewLine + System.Environment.NewLine
+                    + "Note: When adding or removing an entry from the Start Menu, " + System.Environment.NewLine
+                    + "the menu will appear - this is normal, and necessary to" + System.Environment.NewLine
+                    + "work properly. " + System.Environment.NewLine
+                    ,
+                    "Welcome to Game Shortcut Manager", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                Properties.Settings.Default.WelcomeMessageShown = true;
+                Properties.Settings.Default.Save();
+            }
+        }
 
         private void setEdit(String vShortcutPath, String vArguments)
         {
@@ -774,10 +801,12 @@ namespace Game_Shortcut_Manager
 
             if (!FormOK(false, false))
             {
-                btnCreateShortcut.Enabled = false;
+                disableButton(btnCreateShortcut);
+                //btnCreateShortcut.Enabled = false;
             } else
             {
-                btnCreateShortcut.Enabled = true;
+                enableButton(btnCreateShortcut);
+                //btnCreateShortcut.Enabled = true;
             }
         }
 
@@ -798,13 +827,15 @@ namespace Game_Shortcut_Manager
             {
                 lblResults.Text = "Check form problems";
                 lblResults.ForeColor = Color.DarkRed;
-                btnCreateShortcut.Enabled = false;
+                disableButton(btnCreateShortcut);
+                //btnCreateShortcut.Enabled = false;
                 return;
             } else
             {
                 lblResults.Text = "Form is OK";
                 lblResults.ForeColor = Color.DarkGreen;
-                btnCreateShortcut.Enabled = true;
+                enableButton(btnCreateShortcut);
+                //btnCreateShortcut.Enabled = true;
                 return;
             }
         }
@@ -884,17 +915,22 @@ namespace Game_Shortcut_Manager
 
         private void setShortcutButtons()
         {
-            btnRemoveEntry.Enabled = false;
+            //btnRemoveEntry.Enabled = false;
+            disableButton(btnRemoveEntry);
 
             if (olvShortcuts.SelectedItems.Count > 0)
             {
                 lblResults.Text = string.Empty;
 
                 //btnCreateShortcut.Enabled = true;
-                btnPinStart.Enabled = true;
-                btnPinTaskbar.Enabled = true;
-                btnRemoveShortcut.Enabled = true;
-                btnRemoveEntry.Enabled = true;
+                enableButton(btnRemoveShortcut);
+                enableButton(btnPinStart);
+                enableButton(btnPinTaskbar);
+                enableButton(btnRemoveEntry);
+                //btnPinStart.Enabled = true;
+                //btnPinTaskbar.Enabled = true;
+                //btnRemoveShortcut.Enabled = true;
+                //btnRemoveEntry.Enabled = true;
 
                 String path = ((ShortcutItem)olvShortcuts.SelectedItem.RowObject).ShortcutPath;
                 String filename = FileFunctions.getFilename(path, true);
@@ -919,14 +955,18 @@ namespace Game_Shortcut_Manager
                 if (File.Exists(path))
                 {
                     btnRemoveShortcut.Text = "Remove Shortcut";
-                    btnPinTaskbar.Enabled = true;
-                    btnPinStart.Enabled = true;
+                    enableButton(btnPinTaskbar);
+                    enableButton(btnPinStart);
+                    //btnPinTaskbar.Enabled = true;
+                    //btnPinStart.Enabled = true;
                 }
                 else
                 {
                     btnRemoveShortcut.Text = "Save Shortcut";
-                    btnPinTaskbar.Enabled = false;
-                    btnPinStart.Enabled = false;
+                    disableButton(btnPinTaskbar);
+                    disableButton(btnPinStart);
+                    //btnPinTaskbar.Enabled = false;
+                    //btnPinStart.Enabled = false;
                 }
 
 
@@ -934,9 +974,11 @@ namespace Game_Shortcut_Manager
             else
             {
                 //btnCreateShortcut.Enabled = false;
-                btnRemoveShortcut.Enabled = false;
-                btnPinStart.Enabled = false;
-                btnPinTaskbar.Enabled = false;
+                disableButton(btnRemoveShortcut);
+                disableButton(btnPinStart);
+                disableButton(btnPinTaskbar);
+                disableButton(btnRemoveEntry);
+
             }
 
         }
@@ -1244,14 +1286,41 @@ namespace Game_Shortcut_Manager
 
         internal void ShowWorking()
         {
+            pnlWorking.Visible = true;
             pnlForm.Enabled = false;
             pnlList.Enabled = false;
+
+            disableButton(btnRemoveShortcut);
+            disableButton(btnPinStart);
+            disableButton(btnPinTaskbar);
+            disableButton(btnRemoveEntry);
+
         }
 
         internal void HideWorking()
         {
             pnlForm.Enabled = true;
             pnlList.Enabled = true;
+            pnlWorking.Visible = false;
+
+            enableButton(btnRemoveShortcut);
+            enableButton(btnPinStart);
+            enableButton(btnPinTaskbar);
+            enableButton(btnRemoveEntry);
+        }
+
+        private void disableButton(Button vButton)
+        {
+            vButton.Enabled = false;
+            vButton.BackColor = Color.LightGray;
+            vButton.ForeColor = Color.Gray;
+        }
+
+        private void enableButton(Button vButton)
+        {
+            vButton.Enabled = true;
+            vButton.BackColor = Color.Lavender;
+            vButton.ForeColor = Color.Black;
         }
 
         private void btnRemoveEntry_Click(object sender, EventArgs e)
@@ -1410,7 +1479,8 @@ namespace Game_Shortcut_Manager
 
                 setEdit(((ShortcutItem)olvShortcuts.SelectedItem.RowObject).ShortcutPath, ((ShortcutItem)olvShortcuts.SelectedItem.RowObject).Arguments);
                 EditShortcutPath = ((ShortcutItem)olvShortcuts.SelectedItem.RowObject).ShortcutPath;
-                btnCreateShortcut.Enabled = true;
+                //btnCreateShortcut.Enabled = true;
+                enableButton(btnCreateShortcut);
 
                 ApplyingSettings = false;
             }
