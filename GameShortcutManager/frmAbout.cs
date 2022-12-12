@@ -141,5 +141,10 @@ namespace Game_Shortcut_Manager
             proc.StartInfo.FileName = "mailto:tgrowden@gmail.com?subject=" + frmMain.AppPathName + " Feedback/Support/Question&body=I have a Question / some Feedback / a Support Issue (**please say which one**)\n\n";
             proc.Start();
         }
+
+        private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            System.Diagnostics.Process.Start("http://www.technosys.net/products/utils/pintotaskbar");
+        }
     }
 }

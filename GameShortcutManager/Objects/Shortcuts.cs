@@ -249,7 +249,9 @@ namespace Game_Shortcut_Manager.Objects
             dtShortcuts.Clear();
             dtShortcuts.Dispose();
 
-            return true;
+            output = true; 
+
+            return output;
 
         }
 

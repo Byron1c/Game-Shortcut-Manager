@@ -7,6 +7,12 @@ using System.Windows.Forms;
 
 namespace Launcher
 {
+    
+    // HOW TO PROPERLY EXIT A PROGRAM
+    //https://stackoverflow.com/questions/12977924/how-to-properly-exit-a-c-sharp-application
+
+
+
     static class Program
     {
         /// <summary>
@@ -102,8 +108,10 @@ namespace Launcher
                     if (URL != string.Empty && Launch == true)
                     {
                         OpenURL(URL);
-                        Quit();
+                        //Quit();
                     }
+
+                    Quit();
                 }
                 catch (Exception ex)
                 {
@@ -113,8 +121,8 @@ namespace Launcher
                 
             }
 
-           
 
+            Quit();
             //***************************************************
 
 
@@ -122,6 +130,8 @@ namespace Launcher
 
         internal static void OpenURL(String vURL)
         {
+            //System.Diagnostics.ProcessStartInfo startInfo;
+
             System.Diagnostics.Process.Start(vURL);
         }
 
@@ -137,6 +147,8 @@ namespace Launcher
                 // Console app
                 System.Environment.Exit(1);
             }
+
+
         }
 
 

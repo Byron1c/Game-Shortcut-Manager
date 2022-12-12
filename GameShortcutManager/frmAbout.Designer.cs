@@ -46,6 +46,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.lblDonationSuggestion = new System.Windows.Forms.Label();
+            this.linkLabel1 = new System.Windows.Forms.LinkLabel();
             ((System.ComponentModel.ISupportInitialize)(this.pbDonateQRCode)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbIcon)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbDonate)).BeginInit();
@@ -227,20 +228,32 @@
             // 
             this.lblDonationSuggestion.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblDonationSuggestion.ForeColor = System.Drawing.Color.MidnightBlue;
-            this.lblDonationSuggestion.Location = new System.Drawing.Point(9, 216);
+            this.lblDonationSuggestion.Location = new System.Drawing.Point(9, 237);
             this.lblDonationSuggestion.Name = "lblDonationSuggestion";
-            this.lblDonationSuggestion.Size = new System.Drawing.Size(517, 103);
+            this.lblDonationSuggestion.Size = new System.Drawing.Size(517, 84);
             this.lblDonationSuggestion.TabIndex = 214;
             this.lblDonationSuggestion.Text = "Please consider donating if you find this application useful, and it has improved" +
     " your work, or saved you time. Whatever you can afford would be appreicated.\r\n\r\n" +
     "Thank you :)";
             this.lblDonationSuggestion.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // linkLabel1
+            // 
+            this.linkLabel1.AutoSize = true;
+            this.linkLabel1.Location = new System.Drawing.Point(169, 217);
+            this.linkLabel1.Name = "linkLabel1";
+            this.linkLabel1.Size = new System.Drawing.Size(200, 13);
+            this.linkLabel1.TabIndex = 215;
+            this.linkLabel1.TabStop = true;
+            this.linkLabel1.Text = "Special Thanks to TechnoSys for SysPin";
+            this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
+            // 
             // frmAbout
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(538, 334);
+            this.Controls.Add(this.linkLabel1);
             this.Controls.Add(this.lblDonationSuggestion);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.pbEmail);
@@ -289,5 +302,6 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.Label lblDonationSuggestion;
+        private System.Windows.Forms.LinkLabel linkLabel1;
     }
 }

@@ -60,7 +60,7 @@ namespace Game_Shortcut_Manager
         private String ExampleURL = @"steam://rungameid/1234567890";
         private String ExampleShortcutPath = @"C:\Temp";
         private String ExampleName = @"My App Shortcut";
-        private String ExampleShortcutKey = @"Ctrl+Alt+G";
+        private String ExampleShortcutKey = @"Ctrl+Alt+L";
 
         internal frmShowText formShowInfo;
 
@@ -74,6 +74,7 @@ namespace Game_Shortcut_Manager
         internal Mode mode = Mode.Add;
         private ShortcutItem editItem = null;
 
+        internal String StatusText = string.Empty;
         //com.epicgames.launcher://apps/Curry?action=launch&silent=true
         //Origin: NONE
         //uplay://launch/720/0
@@ -248,6 +249,12 @@ namespace Game_Shortcut_Manager
 
         }
 
+        internal void AddStatusText(String vText)
+        {
+            StatusText = vText + StatusText + System.Environment.NewLine;
+            //tslStatus.Text = StatusText;
+        }
+
         private void showWelcome()
         {
 
@@ -288,6 +295,11 @@ namespace Game_Shortcut_Manager
                 editItem = Shortcuts.Items.Find(x => x.Arguments.Contains(vArguments));
             }
 
+            //check info is okay and set to defaults if not found
+            if (!File.Exists(editItem.Target)) { editItem.Target = GetLauncherFullPath(); }
+            if (!Directory.Exists(editItem.WorkingDirectory)) { editItem.WorkingDirectory = GetAppFullPath(); }
+            if (!File.Exists(editItem.IconPath)) { editItem.IconPath = GetLauncherFullPath(); }
+
             if (editItem != null)
             {
                 setIcon(editItem.IconPath);
@@ -305,7 +317,13 @@ namespace Game_Shortcut_Manager
                 //setText(txtURL, ExampleURL);
                 SetAllText();
             }
-            
+
+            //set the checkboxes ... 
+            Boolean isInStart = IsInStartMenu(vShortcutPath);// Path.Combine(ShortcutPathOld, vShortcutFilename));
+            Boolean isInTaskbar = IsInTaskbar(vShortcutPath);// Path.Combine(ShortcutPathOld, vShortcutFilename));
+
+            cbPinToStartMenu.Checked = isInStart;
+            cbPinToTaskbar.Checked = isInTaskbar;
 
         }
 
@@ -315,13 +333,22 @@ namespace Game_Shortcut_Manager
         /// </summary>
         private void CleanUpOldShortcut(String vShortcutPath)
         {
+            AddStatusText("Cleaning old Shortcut: ");
+
             Boolean isInStart = IsInStartMenu(vShortcutPath);// Path.Combine(ShortcutPathOld, vShortcutFilename));
             Boolean isInTaskbar = IsInTaskbar(vShortcutPath);// Path.Combine(ShortcutPathOld, vShortcutFilename));
 
-            if (isInStart) ShortcutExt.RemoveFromStartMenu(vShortcutPath);
-            if (isInTaskbar) ShortcutExt.RemoveFromTaskbar(vShortcutPath);
+            if (isInStart) { ShortcutExt.RemoveFromStartMenu(vShortcutPath);
+                AddStatusText("Removed from Start Menu.");
+            }
+            if (isInTaskbar) { ShortcutExt.RemoveFromTaskbar(vShortcutPath);
+                AddStatusText("Removed from Taskbar.");
+            }
 
+            if (File.Exists(vShortcutPath)) AddStatusText("Deleting old shortcut.");
             FileFunctions.DeleteFileToRecycleBin(vShortcutPath);// Path.Combine(ShortcutPathOld, vShortcutFilename));
+
+            AddStatusText("Cleaning old Shortcut FINISHED");
         }
 
         internal static void OpenURL(String vURL)
@@ -333,11 +360,15 @@ namespace Game_Shortcut_Manager
         {
             if (String.IsNullOrEmpty(vFilePath)) return;
 
+            String filepath = vFilePath;
             //Icon TheIcon = IconFromFilePath(vFilePath);
             //pbIcon.Image = TheIcon.ToBitmap();
-            
+            if (!File.Exists(filepath))
+            {
+                filepath = GetLauncherFullPath();
+            }
 
-            pbIcon.Image = IconFromFilePath(vFilePath).ToBitmap(); 
+            pbIcon.Image = IconFromFilePath(filepath).ToBitmap(); 
         }
 
         internal static Icon IconFromFilePath(String vPath)
@@ -495,7 +526,7 @@ namespace Game_Shortcut_Manager
                 if (vHighlight) txtName.BackColor = Color.PaleGoldenrod;
             }
 
-            if (!String.IsNullOrEmpty(txtShortcutKey.Text))
+            if ((txtShortcutKey.Text == ExampleShortcutKey) && !String.IsNullOrEmpty(txtShortcutKey.Text))
             {
                 Boolean matchFound = IsShortcutKeysOK(txtShortcutKey.Text.Trim(), out String MatchString);
                 ////String keysRegEx = @"(ctrl|shift|alt)\s*\+\s*([a-z+\-.,/]|Numpad\s*[0-9+\-/]+|insert)(\s*(,|\+)\s*((ctrl|shift|alt)\s*\+\s*)*([a-z+\-.,/]|Numpad\s*[0-9+\-/]+|insert))*(?=\W)";
@@ -525,7 +556,7 @@ namespace Game_Shortcut_Manager
                 message += " * You need to supply a storage location for the shortcut" + System.Environment.NewLine;
                 if (vHighlight) txtShortcutPath.BackColor = Color.PaleGoldenrod;
             }
-            if (!Directory.Exists(txtShortcutPath.Text.Trim()))
+            if (!Directory.Exists(Path.GetFullPath(txtShortcutPath.Text.Trim())))
             {
                 output = false;
                 message += " * The Shortcut path you have selected does not exist" + System.Environment.NewLine;
@@ -590,11 +621,11 @@ namespace Game_Shortcut_Manager
         }
 
 
-        private void CreateShortcut(Boolean vPinToStart, Boolean vPintToTaskbar)
+        private void CreateShortcutForm(Boolean vPinToStart, Boolean vPintToTaskbar, Boolean vCheckForm)
         {
             ShowWorking();
             
-            if (!FormOK(true, true))
+            if (!FormOK(true, vCheckForm) && vCheckForm)
             {
                 lblResults.Text = "Check form problems";
                 lblResults.ForeColor = Color.DarkRed;
@@ -602,11 +633,13 @@ namespace Game_Shortcut_Manager
                 return;
             }
 
-            this.CurrentEXEFilePath = txtEXEPath.Text;
-            this.CurrentName = txtName.Text;
-            this.CurrentShortcutPath = txtShortcutPath.Text;
-            this.CurrentURL = txtURL.Text;
-            this.CurrentShortcutKeys = txtShortcutKey.Text;
+            AddStatusText("Creating Shortcut " + txtName.Text.Trim());
+
+            this.CurrentEXEFilePath = txtEXEPath.Text.Trim();
+            this.CurrentName = txtName.Text.Trim();
+            this.CurrentShortcutPath = txtShortcutPath.Text.Trim();
+            this.CurrentURL = txtURL.Text.Trim();
+            this.CurrentShortcutKeys = txtShortcutKey.Text.Trim();
 
             //string appPath = GetLauncherFullPath(); //GetAppFullPath() + System.AppDomain.CurrentDomain.FriendlyName;
             //appPath += " -URL " + this.CurrentURL;
@@ -614,11 +647,13 @@ namespace Game_Shortcut_Manager
             Properties.Settings.Default.Save();
 
             string shortcutPath = this.CurrentShortcutPath + @"\" + CurrentName + ".lnk";
+            string shortcutKey = ShortcutExt.ToCamelCase(txtShortcutKey.Text);
+            if (shortcutKey == ExampleShortcutKey) shortcutKey = String.Empty;
 
             ShortcutItem si = new ShortcutItem();
             si.Arguments = "-URL " + this.CurrentURL; //-LAUNCH
             si.Description = txtDescription.Text;
-            si.Hotkey = ShortcutExt.ToCamelCase(txtShortcutKey.Text);
+            si.Hotkey = shortcutKey;
             si.IconPath = this.CurrentEXEFilePath;
             si.Name = CurrentName;
             si.ShortcutPath = shortcutPath;
@@ -628,18 +663,19 @@ namespace Game_Shortcut_Manager
             si.ShortcutPathSpecialFolder = cbFileLocation.SelectedItem.ToString();
 
             //do this BEFORE saving the shortcut
-            Boolean shortcutExists = false;
-            shortcutExists = File.Exists(shortcutPath);
+            Boolean shortcutExistsInList = false;
+            Boolean shortcutFileExists = File.Exists(shortcutPath);
 
-            if (!shortcutExists)
+            if (shortcutFileExists)
             {
-                shortcutExists = (Shortcuts.Items.Find(x => x.Arguments.Contains(si.Arguments)) != null);
+                shortcutExistsInList = (Shortcuts.Items.Find(x => x.Arguments.Contains(si.Arguments)) != null);
+                AddStatusText("Shortcut file already exists - overwritten.");
             }
 
             // this overwrites existing shortcuts:
             Boolean successShortcut = ShortcutExt.CreateShortcut(si);
 
-            if (!shortcutExists)
+            if (!shortcutExistsInList)
             {
                 Shortcuts.Items.Add(si);
             }
@@ -651,7 +687,9 @@ namespace Game_Shortcut_Manager
                 Shortcuts.Items.Add(si);
             }
 
-            Shortcuts.Save(GetAppFullPath() + SettingsFilename);
+            SaveSettings(); // Shortcuts.Save(GetAppFullPath() + SettingsFilename);
+            AddStatusText("Shortcut saved.");
+
             fillShortcutsList();
 
             //Shortcut.CreateShortcut(
@@ -668,11 +706,132 @@ namespace Game_Shortcut_Manager
             if (cbPinToTaskbar.Checked || vPintToTaskbar)
             {
                 ShortcutExt.PinToTaskbar(shortcutPath);
+                AddStatusText("Shortcut pinned to Taskbar.");
             }
 
             if (cbPinToStartMenu.Checked || vPinToStart)
             {
                 ShortcutExt.PinToStartMenu(shortcutPath);
+                AddStatusText("Shortcut pinned to the Start Menu.");
+            }
+
+            //lblResults.Visible = true;
+            if (successShortcut)
+            {
+                lblResults.Text = "Shortcut " + CurrentName + " Saved";
+                lblResults.ForeColor = Color.DarkGreen;
+                AddStatusText("Shortcut Saved Successfully.");
+            }
+            else
+            {
+                lblResults.Text = "Shortcut " + CurrentName + " NOT Saved";
+                lblResults.ForeColor = Color.DarkRed;
+                AddStatusText("Shortcut NOT SAVED.");
+            }
+
+            //txtName.Text = string.Empty;
+            //txtEXEPath.Text = string.Empty;
+            //txtShortcutPath.Text = string.Empty;
+            //txtURL.Text = string.Empty;
+            //txtDescription.Text = string.Empty;
+            //txtShortcutKey.Text = string.Empty;
+            //cbWindowStyle.SelectedItem = "Normal Window";
+
+            //setText(txtEXEPath, ExampleEXEFilePath);
+            //setText(txtName, ExampleName);
+            //setText(txtShortcutPath, ExampleShortcutPath);
+            //setText(txtURL, ExampleURL);
+            ClearForm();
+            HideWorking();
+        }
+
+        internal void SaveSettings()
+        {
+            Shortcuts.Save(GetAppFullPath() + SettingsFilename);
+            Properties.Settings.Default.Save();
+            AddStatusText("Settings saved.");
+        }
+
+        private void CreateShortcut(String vPath, Boolean vPinToStart, Boolean vPintToTaskbar, ShortcutItem vShortcut)
+        {
+            ShowWorking();
+
+            String ShortcutPath = vPath; //Path.Combine(this.ShortcutPathOld, vShortcut.Name + ".lnk");
+
+            if (!File.Exists(vShortcut.Target)) { vShortcut.Target = GetLauncherFullPath(); }
+            if (!Directory.Exists(vShortcut.WorkingDirectory)) { vShortcut.WorkingDirectory = GetAppFullPath(); }
+            if (!File.Exists(vShortcut.IconPath)) { vShortcut.IconPath = GetLauncherFullPath(); }
+
+
+            //check the shortcut is valid
+            //Boolean shortcutOK = true;
+            //StringBuilder sb = new StringBuilder();
+
+            //automaticall fix the target and working directory
+            //if (!File.Exists(vShortcut.IconPath)) { shortcutOK = false; sb.AppendLine("* The Icon does not exist"); }
+            //if (!File.Exists(vShortcut.Target)) { shortcutOK = false;sb.AppendLine("* The Target (Launcher) does not exist"); }
+            //if (!Directory.Exists(vShortcut.WorkingDirectory)) { shortcutOK = false; sb.AppendLine("* The Working Directory does not exist"); }
+
+            //if (!shortcutOK)
+            //{
+            //    MessageBox.Show("The following problems were found. Please Edit (double click) this shortcut, and fix these issues: "
+            //        + System.Environment.NewLine + sb.ToString(), "Problems with Shortcut", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            //    HideWorking();
+            //    return;
+            //}
+
+            //string appPath = GetLauncherFullPath(); //GetAppFullPath() + System.AppDomain.CurrentDomain.FriendlyName;
+            //appPath += " -URL " + this.CurrentURL;
+            Properties.Settings.Default.LastShortcutPath = vPath; // CurrentShortcutPath;
+            Properties.Settings.Default.Save();
+
+
+            //do this BEFORE saving the shortcut
+            Boolean shortcutExists = false;
+            shortcutExists = File.Exists(ShortcutPath);
+
+            if (!shortcutExists)
+            {
+                shortcutExists = (Shortcuts.Items.Find(x => x.Arguments.Contains(vShortcut.Arguments)) != null);
+            }
+
+            // this overwrites existing shortcuts:
+            Boolean successShortcut = ShortcutExt.CreateShortcut(vShortcut);
+
+            if (!shortcutExists)
+            {
+                Shortcuts.Items.Add(vShortcut);
+            }
+            else
+            {
+                //SHORTCUT EXISTS
+                //Shortcuts.Items.Find(x => x.ShortcutPath.Contains(EditShortcutPath));
+                Shortcuts.Items.RemoveAll(x => x.Arguments == vShortcut.Arguments); // EditShortcutPath);
+                Shortcuts.Items.Add(vShortcut);
+            }
+
+            SaveSettings();  // Shortcuts.Save(GetAppFullPath() + SettingsFilename);
+            fillShortcutsList();
+
+            //Shortcut.CreateShortcut(
+            //    shortcutPath, //this.CurrentShortcutPath + @"\" + CurrentName + ".lnk", //Shortcut path
+            //    CurrentName,  //TITLE
+            //    "Description here", //DESCRIPTION
+            //    GetAppFullPath() + System.AppDomain.CurrentDomain.FriendlyName,   //TARGET
+            //    GetAppFullPath(), // WORKING DIRECTORY
+            //    this.CurrentEXEFilePath,  //icon
+            //    "-LAUNCH -URL " + this.CurrentURL,
+            //    "" //hotkey
+            //    );
+
+            if (cbPinToTaskbar.Checked || vPintToTaskbar)
+            {
+                ShortcutExt.PinToTaskbar(ShortcutPath);
+            }
+
+            if (cbPinToStartMenu.Checked || vPinToStart)
+            {
+                ShortcutExt.PinToStartMenu(ShortcutPath);
             }
 
             //lblResults.Visible = true;
@@ -727,6 +886,8 @@ namespace Game_Shortcut_Manager
 
             EditShortcutPath = string.Empty;
             lblResults.Text = string.Empty;
+
+            AddStatusText("Cleared form.");
 
             ApplyingSettings = false;
         }
@@ -884,7 +1045,7 @@ namespace Game_Shortcut_Manager
 
         internal void setFileLocationControls()
         {
-            if (cbFileLocation.SelectedItem == "Other")
+            if (cbFileLocation.SelectedItem.ToString() == "Other")
             {
                 txtShortcutPath.ReadOnly = false;
             } else
@@ -1329,14 +1490,18 @@ namespace Game_Shortcut_Manager
             {
                 try
                 {
-                    DialogResult result = MessageBox.Show("Are you sure you want to COMPLETELY remove this shortcut entry?", "Remove Shortcut", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
+                    DialogResult result = MessageBox.Show("Are you sure you want to COMPLETELY remove this shortcut entry?" + System.Environment.NewLine, "Remove Shortcut", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
 
                     if (result == DialogResult.OK)
                     {
+
                         ShowWorking();
 
                         String path = ((ShortcutItem)olvShortcuts.SelectedItem.RowObject).ShortcutPath;
                         String filename = FileFunctions.getFilename(path, true);
+                        String name = ((ShortcutItem)olvShortcuts.SelectedItem.RowObject).Name;
+
+                        AddStatusText("REMOVING Shortcut Entry" + name + "");
 
                         ShortcutExt.RemoveFromTaskbar(path);
                         ShortcutExt.RemoveFromStartMenu(path);
@@ -1349,21 +1514,25 @@ namespace Game_Shortcut_Manager
                         lblResults.Text = filename + " Removed";
                         lblResults.ForeColor = Color.DarkGreen;
 
+                        AddStatusText("REMOVING Shortcut Entry" + name + " Finished.");
+
                         HideWorking();
                     }
 
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     String path = ((ShortcutItem)olvShortcuts.SelectedItem.RowObject).ShortcutPath;
                     String filename = FileFunctions.getFilename(path, true);
 
                     lblResults.Text = filename + ": Problem removing shortcut";
                     lblResults.ForeColor = Color.DarkRed;
+                    AddStatusText("PROBLEM REMOVING Shortcut Entry: " + ex.Message + "");
                 }
 
             }
 
+            SaveSettings();
             fillShortcutsList();
             HideWorking();
             setShortcutButtons();
@@ -1402,25 +1571,43 @@ namespace Game_Shortcut_Manager
         {
             
             string keys = "";
+            Boolean controlKeySet = false;
+
+            if (e.KeyCode == Keys.Back)
+            {
+                txtShortcutKey.Text = String.Empty;
+                return;
+            }
 
             if ((System.Windows.Input.Keyboard.Modifiers & System.Windows.Input.ModifierKeys.Control) > 0)
             {
                 keys += "Ctrl+";
+                controlKeySet = true;
             }
 
             if ((System.Windows.Input.Keyboard.Modifiers & System.Windows.Input.ModifierKeys.Alt) > 0)
             {
                 keys += "Alt+";
+                controlKeySet = true;
             }
 
             if ((System.Windows.Input.Keyboard.Modifiers & System.Windows.Input.ModifierKeys.Shift) > 0)
             {
                 keys += "Shift+";
+                controlKeySet = true;
             }
 
-            keys += e.KeyCode;// Key;
-
-            txtShortcutKey.Text = keys;
+            if (controlKeySet)
+            {
+                keys += e.KeyCode;// Key;
+                txtShortcutKey.Text = keys;
+            }
+            else
+            {
+                // Ignore the key
+                e.SuppressKeyPress = true; 
+                e.Handled = true;
+            }
 
             //Boolean ShortcutOK = IsShortcutKeysOK(txtShortcutKey.Text.Trim(), out String MatchString);
             //txtShortcutKey.Text = MatchString;
@@ -1436,9 +1623,11 @@ namespace Game_Shortcut_Manager
 
         private void TxtShortcutKey_LostFocus(object sender, EventArgs e)
         {
+            String MatchString = string.Empty;
+
             setTextBoxLostFocus(((TextBox)sender), ExampleShortcutKey);
 
-            if (!IsShortcutKeysOK(txtShortcutKey.Text.Trim(), out String MatchString))
+            if (txtShortcutKey.Text.Trim().Length > 0 && !IsShortcutKeysOK(txtShortcutKey.Text.Trim(), out MatchString))
             {
                 //message += " * The Shortcut Keys are not formatted correctly" + System.Environment.NewLine;
                 lblResults.Text = "Check form problems";
@@ -1511,9 +1700,14 @@ namespace Game_Shortcut_Manager
 
         }
 
-        private void btnManageShortcut_Click(object sender, EventArgs e)
+        private void btnRemoveShortcut_Click(object sender, EventArgs e)
         {
-            if (olvShortcuts.SelectedItems.Count > 0)
+            String path = ((ShortcutItem)olvShortcuts.SelectedItem.RowObject).ShortcutPath;
+            String filename = FileFunctions.getFilename(path, true);
+            ShortcutItem si = ((ShortcutItem)olvShortcuts.SelectedItem.RowObject);
+
+            //REMOVE
+            if (olvShortcuts.SelectedItems.Count > 0 && File.Exists(filename))
             {
                 try
                 {
@@ -1523,13 +1717,17 @@ namespace Game_Shortcut_Manager
                     {
                         ShowWorking();
 
-                        String path = ((ShortcutItem)olvShortcuts.SelectedItem.RowObject).ShortcutPath;
-                        String filename = FileFunctions.getFilename(path, true);
+                        AddStatusText("Removing Shortcut " + ((ShortcutItem)olvShortcuts.SelectedItem.RowObject).Name);
 
                         ShortcutExt.RemoveFromTaskbar(path);
+                        AddStatusText("Removed from Taskbar.");
+
                         ShortcutExt.RemoveFromStartMenu(path);
+                        AddStatusText("Removed from Start Menu.");
+
                         //delete file
                         FileFunctions.DeleteFileToRecycleBin(path);
+                        AddStatusText("Shortcut file DELETED.");
 
                         //result = MessageBox.Show("Are you sure you want to remove this shortcut from the list?", "Remove Shortcut from List", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
                         //if (result == DialogResult.OK)
@@ -1546,18 +1744,50 @@ namespace Game_Shortcut_Manager
                     }
 
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    String path = ((ShortcutItem)olvShortcuts.SelectedItem.RowObject).ShortcutPath;
-                    String filename = FileFunctions.getFilename(path, true);
+                    //String path = ((ShortcutItem)olvShortcuts.SelectedItem.RowObject).ShortcutPath;
+                    //String filename = FileFunctions.getFilename(path, true);
 
                     lblResults.Text = filename + ": Problem removing shortcut";
                     lblResults.ForeColor = Color.DarkRed;
+                    AddStatusText("PROBLEM removing the Shortcut: " + ex.Message);
                 }
 
+            } else
+            {
+                // CREATE SHORTCUT
+                CreateShortcut(path, si);
             }
 
+            SaveSettings();
             setShortcutButtons();
+        }
+
+        internal void CreateShortcut(String vPath, ShortcutItem vSI)
+        {
+            Boolean isInStart = false;
+            Boolean isInTaskbar = false;
+
+            //Get data for shortcut
+            if (File.Exists(vPath))
+            {
+                ShortcutExt.GetShortcutInfo(vPath, out vSI);
+
+                //do cleanup of old shortcut first
+                isInStart = IsInStartMenu(vPath);// Path.Combine(ShortcutPathOld, vShortcutFilename));
+                isInTaskbar = IsInTaskbar(vPath);// Path.Combine(ShortcutPathOld, vShortcutFilename));
+
+                CleanUpOldShortcut(vPath);
+                ShortcutPathOld = string.Empty;
+                ShortcutPathChanged = false;
+            }
+                        
+            if (vSI != null)
+            {
+                //Create new shortcut
+                CreateShortcut(vPath, isInStart, isInTaskbar, vSI);
+            }
         }
 
         private void btnManageTaskbar_Click(object sender, EventArgs e)
@@ -1568,14 +1798,18 @@ namespace Game_Shortcut_Manager
 
                 String path = ((ShortcutItem)olvShortcuts.SelectedItem.RowObject).ShortcutPath;
                 String filename = FileFunctions.getFilename(path, true);
+                String name = ((ShortcutItem)olvShortcuts.SelectedItem.RowObject).Name;
+
                 if (!IsInTaskbar(filename))
                 {
+                    AddStatusText("Adding Shortcut " + name + " to the Taskbar.");
                     ShortcutExt.PinToTaskbar(path);// @"E:\Users\Troy\Dropbox\@Backup\VisualStudio\LAWC\LAWC\bin\x64\Release\LAWC.exe");
                     lblResults.Text = filename + " Pinned to Taskbar";
                     lblResults.ForeColor = Color.DarkGreen;
                 }
                 else
                 {
+                    AddStatusText("Removing Shortcut " + name + " from the Taskbar.");
                     ShortcutExt.RemoveFromTaskbar(path); // @"E:\Users\Troy\Dropbox\@Backup\VisualStudio\LAWC\LAWC\bin\x64\Release\LAWC.exe");
                     lblResults.Text = filename + " Removed from Taskbar";
                     lblResults.ForeColor = Color.DarkGreen;
@@ -1588,6 +1822,11 @@ namespace Game_Shortcut_Manager
 
 
         private void btnCreateShortcut_Click(object sender, EventArgs e)
+        {
+            CreateShortcutForm(true);
+        }
+
+        internal void CreateShortcutForm(Boolean vCheckForm)
         {
             Boolean isInStart = false;
             Boolean isInTaskbar = false;
@@ -1604,7 +1843,7 @@ namespace Game_Shortcut_Manager
             }
             //Create new shortcut
 
-            CreateShortcut(isInStart, isInTaskbar);
+            CreateShortcutForm(isInStart, isInTaskbar, vCheckForm);
 
         }
 
@@ -1810,32 +2049,51 @@ namespace Game_Shortcut_Manager
 
         private void btnPinStart_Click(object sender, EventArgs e)
         {
+            String path = ((ShortcutItem)olvShortcuts.SelectedItem.RowObject).ShortcutPath;
+            Boolean isInStart = false;
+            Boolean wasInStart = IsInStartMenu(path);            
+
             if (olvShortcuts.SelectedItems.Count > 0)
             {
                 ShowWorking();
 
-                String path = ((ShortcutItem)olvShortcuts.SelectedItem.RowObject).ShortcutPath;
+                
                 String filename = FileFunctions.getFilename(path, true);
+                String name = ((ShortcutItem)olvShortcuts.SelectedItem.RowObject).Name;
 
-                if (!IsInStartMenu(path))
+                if (!wasInStart)
                 {
+                    AddStatusText("Adding Shortcut " + name + " to the Start Menu.");
                     ShortcutExt.PinToStartMenu(path);
                     lblResults.Text = filename + " Pinned to Start Menu";
-                    lblResults.ForeColor = Color.DarkGreen;
+                    lblResults.ForeColor = Color.DarkGreen;                    
                 }
                 else
                 {
+                    AddStatusText("Removing Shortcut " + name + " from the Start Menu.");
                     ShortcutExt.RemoveFromStartMenu(path);
                     lblResults.Text = filename + " Removed from Start Menu";
                     lblResults.ForeColor = Color.DarkGreen;
                 }
+
+                isInStart = IsInStartMenu(path);// Path.Combine(ShortcutPathOld, vShortcutFilename));
             }
             //need to open the start menu to register the change
             KeyboardSend.KeyDown(Keys.LWin);
             KeyboardSend.KeyUp(Keys.LWin);
 
+
+
             setShortcutButtons();
             HideWorking();
+
+            // check if it worked
+            if (wasInStart == isInStart)
+            {
+                // DID NOT WORK
+                lblResults.Text = " FAILED to set the Start Menu";
+                lblResults.ForeColor = Color.DarkRed;
+            }
         }
 
 
@@ -1844,9 +2102,14 @@ namespace Game_Shortcut_Manager
             setShortcutButtons();
         }
 
+        private void tslStatus_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show(StatusText);
+        }
+
 
         //*****************************************************************************************************************
-        
+
 
 
 
